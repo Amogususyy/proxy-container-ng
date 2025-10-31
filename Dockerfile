@@ -1,4 +1,5 @@
 FROM docker.io/rapiz1/rathole:latest AS rathole
+FROM ghcr.io/akinokaede/asport-client:latest AS asport_client
 FROM rustlang/rust:nightly-slim AS shoes
 
 RUN apt-get update && apt-get install -y \
@@ -13,7 +14,7 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /usr/src
-RUN git clone https://github.com/cfal/shoes.git
+RUN git clone --depth 1 https://github.com/cfal/shoes.git
 WORKDIR /usr/src/shoes
 
 ENV RUSTFLAGS="--cfg edition2024"
@@ -43,6 +44,7 @@ FROM ubuntu:latest AS dist
 COPY --from=rathole /app/rathole /bin/rathole
 COPY --from=sing_box /go/bin/sing-box /bin/sing-box
 COPY --from=shoes /usr/src/shoes/target/release/shoes /bin/shoes
+COPY --from=asport_client /usr/bin/asport-client /bin/asport-client
 
 RUN apt update \
 	&& apt install -y curl \
