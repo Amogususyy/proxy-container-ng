@@ -14,12 +14,10 @@ RUN apt-get update && apt-get install -y \
 
 WORKDIR /usr/src
 RUN git clone https://github.com/cfal/shoes.git
-
 WORKDIR /usr/src/shoes
 
 ENV RUSTFLAGS="--cfg edition2024"
-
-RUN cargo install shoes
+RUN cargo build --release
 
 FROM golang:alpine AS sing_box
 
