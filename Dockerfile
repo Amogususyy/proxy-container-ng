@@ -1,4 +1,25 @@
 FROM docker.io/rapiz1/rathole:latest AS rathole
+FROM rustlang/rust:nightly-slim AS shoes
+
+RUN apt-get update && apt-get install -y \
+    git \
+    pkg-config \
+    libssl-dev \
+    build-essential \
+    clang \
+    libclang-dev \
+    protobuf-compiler \
+    libprotobuf-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /usr/src
+RUN git clone https://github.com/cfal/shoes.git
+
+WORKDIR /usr/src/shoes
+
+ENV RUSTFLAGS="--cfg edition2024"
+
+RUN cargo install shoes
 
 FROM golang:alpine AS sing_box
 
@@ -23,6 +44,7 @@ FROM ubuntu:latest AS dist
 
 COPY --from=rathole /app/rathole /bin/rathole
 COPY --from=sing_box /go/bin/sing-box /bin/sing-box
+COPY --from=shoes /usr/src/shoes/target/release/shoes /bin/shoes
 
 RUN apt update \
 	&& apt install -y curl \
